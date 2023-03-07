@@ -192,7 +192,8 @@ def main(without_delete=False):
     print("[INFO - Idealista] Не уходите далеко. Нужно будет еще пройти капчу")
     print("[INFO - Idealista] Если после ввода логина и пароля от прокси капча не появится, обновите страницу")
     options = uc.ChromeOptions()
-    options.add_argument(f"--proxy-server={proxy_server}")
+    # options.add_argument(f"--proxy-server={proxy_server}")
+    # options.add_argument("--disable-blink-features")
     browser = uc.Chrome(options=options)
     index = 0
     try:

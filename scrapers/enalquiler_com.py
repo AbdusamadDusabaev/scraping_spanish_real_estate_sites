@@ -77,32 +77,36 @@ def get_info_from_site(start_url, object_type, city):
         if response:
             bs_object = BeautifulSoup(response.content, "lxml")
             cards = bs_object.find_all(name="li", id=True)
+            index = 0
             for card in cards:
-                price = card.find(name="span", class_='propertyCard__price--value').text.strip().replace("\x80", " €")
-                image_url = card.div.picture
-                if image_url is None:
-                    image_url = "No information"
-                else:
-                    image_url = image_url.find(name="source", attrs={"image-extension": "or"})["srcset"]
-                characteristics = card.find(name="ul", class_="propertyCard__details").find_all(name="li")
-                square = characteristics[0].text.strip()
-                bedrooms = characteristics[1].text.strip()
-                if bedrooms == "Piso":
-                    bedrooms = "No information"
-                if len(characteristics) > 2:
-                    bathes = characteristics[2].text.strip()
-                else:
-                    bathes = "No information"
-                title = card.find(name="div", class_='propertyCard__description hidden-xs').a.text.strip()
-                object_url = card.find(name="div", class_='propertyCard__description hidden-xs').a["href"]
-                description = card.find(name="p", class_='propertyCard__description--txt').text.strip()
-                region = card.find(name="div", class_="propertyCard__location").text.strip()
-                region = record_new_region(region=region, city=city)
-                data = {"mode": "rent", "title": title, "object_type": object_type, "price": price,
-                        "square": square, "bedrooms": bedrooms, "bathes": bathes, "description": description,
-                        "url": object_url, "image_url": image_url, "seller_type": "particular", "region": region,
-                        "city": city}
-                result.append(data)
+                try:
+                    price = card.find(name="span", class_='propertyCard__price--value').text.strip().replace("\x80", " €")
+                    image_url = card.div.picture
+                    if image_url is None:
+                        image_url = "No information"
+                    else:
+                        image_url = image_url.find(name="source", attrs={"image-extension": "or"})["srcset"]
+                    characteristics = card.find(name="ul", class_="propertyCard__details").find_all(name="li")
+                    square = characteristics[0].text.strip()
+                    bedrooms = characteristics[1].text.strip()
+                    if bedrooms == "Piso":
+                        bedrooms = "No information"
+                    if len(characteristics) > 2:
+                        bathes = characteristics[2].text.strip()
+                    else:
+                        bathes = "No information"
+                    title = card.find(name="div", class_='propertyCard__description hidden-xs').a.text.strip()
+                    object_url = card.find(name="div", class_='propertyCard__description hidden-xs').a["href"]
+                    description = card.find(name="p", class_='propertyCard__description--txt').text.strip()
+                    region = card.find(name="div", class_="propertyCard__location").text.strip()
+                    region = record_new_region(region=region, city=city)
+                    data = {"mode": "rent", "title": title, "object_type": object_type, "price": price,
+                            "square": square, "bedrooms": bedrooms, "bathes": bathes, "description": description,
+                            "url": object_url, "image_url": image_url, "seller_type": "particular", "region": region,
+                            "city": city}
+                    result.append(data)
+                except Exception as ex:
+                    continue
             print(f"[INFO - Enalquiler] Страница {url} обработана. Было собрано {len(cards)} объектов")
 
     return result

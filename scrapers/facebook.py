@@ -15,7 +15,7 @@ domain = "https://www.facebook.com"
 options = webdriver.ChromeOptions()
 options.add_argument(f"user-agent={ua_chrome}")
 options.add_argument("--disable-notifications")
-# options.add_argument("--headless")
+options.add_argument("--headless")
 
 
 def get_mode(url):
@@ -75,7 +75,7 @@ def get_object_links(browser, url):
     browser.get(url=url)
     old_bs_object = BeautifulSoup(browser.page_source, "lxml")
     index = 0
-    while True:
+    for _ in range(0, 5):
         index += 1
         print(f"[INFO - Facebook] Ссылки со страницы {index} страницы успешно собраны")
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -98,9 +98,12 @@ def get_object_info(browser, object_url, mode, region, city):
     print(f"[INFO] Обрабатываем объект {object_url}")
     browser.get(object_url)
     try:
-        full_description = browser.find_element(By.XPATH, "/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[1]/div[1]/div[2]/div/div/div/div/div/div[2]/div/div[2]/div/div[1]/div[1]/div[8]/div[2]/div/div/div/span/div")
-        browser.execute_script("arguments[0].click();", full_description)
-        time.sleep(1)
+        show_all_description = browser.find_elements(By.TAG_NAME, "span")
+        for el in show_all_description:
+            if el.text == "Ver más":
+                browser.execute_script("arguments[0].click();", el)
+                time.sleep(2)
+                break
     except Exception as ex:
         pass
     bs_object = BeautifulSoup(browser.page_source, "lxml").find(name="div", attrs={"data-pagelet": "MainFeed"})
@@ -110,7 +113,8 @@ def get_object_info(browser, object_url, mode, region, city):
         title = "Not Found"
     price = get_price(bs_object=bs_object)
     try:
-        description = bs_object.find(name="div", class_="xod5an3").find(name="span", class_="x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x1lliihq x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x xudqn12 x3x7a5m x6prxxf xvq8zen xo1l8bm xzsf02u").text.strip()
+        description = bs_object.find(name="div", class_="xz9dl7a x4uap5 xsag5q8 xkhd6sd x126k92a").text
+        description = description.replace("Ver traducción", "").replace("[hidden information]", "").strip()
     except Exception as ex:
         description = "Not Found"
     bedrooms_and_bathrooms = get_bedrooms_and_bathrooms(bs_object=bs_object)

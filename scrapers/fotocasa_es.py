@@ -57,13 +57,14 @@ def get_info_from_site(start_url, mode, object_type, city):
         accept_with_cookie = browser.find_element(By.XPATH, "/html/body/div[1]/div[2]/div/div/div/footer/div/button[2]")
         accept_with_cookie.click()
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(3)
         response = browser.page_source
         bs_object = BeautifulSoup(response, "lxml")
         region = bs_object.find(name="input", class_="sui-AtomInput-input")["value"]
         region = record_new_region(region=region, city=city)
-        max_page = int(bs_object.find_all(name="li", class_='sui-MoleculePagination-item')[-2].text.strip())
         page = 1
-        while page <= max_page:
+        title_error = bs_object.find(name="h3", class_='re-SearchNoResults-title')
+        while title_error is None:
             if "?" in start_url:
                 index = start_url.index("?")
                 url = f"{start_url[:index]}/{page}{start_url[index:]}"
@@ -117,6 +118,8 @@ def get_info_from_site(start_url, mode, object_type, city):
                     page -= 1
             else:
                 print(f"[ERROR - Fotocasa] Не удалось получить ответ от страницы {url}")
+
+            title_error = bs_object.find(name="h3", class_='re-SearchNoResults-title')
 
         correct_result = list()
         for element in result:
